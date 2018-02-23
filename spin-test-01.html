@@ -1,0 +1,84 @@
+<html>
+    <head>
+        <script>
+         // https://www.elated.com/articles/smooth-rotatable-images-css3-jquery/
+         // Center point for each circle:
+         var divx = 0;
+         var divy = 0;
+
+         // Handle to the circle object that is currently spinning
+         var curCircle = 0;
+
+         function spinCircle(e) {
+             var msx = e.pageX - divx;
+             var msy = e.pageY - divy;
+             var mangle = Math.atan2(msy, msx);
+
+             var rotAngle = mangle - curCircle['startMouseAngle'] - 0;
+             //var rotAngle = mangle - curCircle['mouseStartAngle'] +
+ curCircle['imageStartAngle'];
+             curCircle.style.transform = "rotate(" + rotAngle + "rad)";
+             e.preventDefault();
+             return false;
+         }
+
+         function stopSpin(e) {
+             // Mouse button is up. Stop spinning, reset things.
+             window.removeEventListener("mousemove", spinCircle );
+             window.removeEventListener("mouseup", stopSpin );
+             curCircle = 0;
+             return false;
+         }
+
+         function beginSpin(e) {
+             // A circle was clicked. Save the object for later, save the origin x,y of the click for later.
+             curCircle = e.target;          // Target to Spin (divx,divy are center point)
+
+             // Store the angle of the mouse at the start of the rotation, relative to the center of the image.
+             var msx = e.pageX - divx;
+             var msy = e.pageY - divy;
+
+             curCircle['startAngle'] = 0;
+             curCircle['startMouseAngle'] = Math.atan2( msy, msx );
+
+             // Setup event listeners for the whole window. Watch for mouse move or button up to stop spinning.
+             window.addEventListener("mousemove", spinCircle, false );
+             window.addEventListener("mouseup", stopSpin, false );
+             e.preventDefault();    // Dont let the browser catch the click
+             return false;
+         }
+
+         function initCircle(imgLarge, cid) {
+             // Move single circle to center of div, setup listener
+             imgCircle = document.getElementById(cid);
+             imgCircle['curRotate'] = 0;
+             imgCircle.style.left = (imgLarge.naturalWidth / 2) - (imgCircle.naturalWidth/2);
+             imgCircle.style.top = imgCircle.style.left;
+             imgCircle.addEventListener("mousedown", beginSpin, false );
+         }
+
+         function initCircles() {
+             // Position circles centered in div. Setup listerners
+             imgLarge = document.getElementById('large');
+             imgLarge.style.left = 0;
+             imgLarge.style.top = 0;
+             imgLarge.addEventListener("mousedown", beginSpin, false );
+             imgLarge['curRotate'] = 0;
+
+             initCircle(imgLarge, 'medium');
+             initCircle(imgLarge, 'small');
+
+             // Save the center point for later.
+             divx = (imgLarge.width - imgLarge.x) / 2;
+             divy = (imgLarge.height - imgLarge.y) / 2;
+         }
+        </script>
+    </head>
+    <body onload="initCircles();">
+        <div id='circles' style="background-color:green;" >
+            <img style="position:absolute;" id="large" src="./large.png" />
+            <img style="position:absolute;" id="medium" src="./medium.png" />
+            <img style="position:absolute;" id="small" src="./small.png" />
+        </div>
+    </body>
+</html>

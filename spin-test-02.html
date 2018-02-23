@@ -1,0 +1,94 @@
+<html>
+    <head>
+        <script>
+         // https://www.elated.com/articles/smooth-rotatable-images-css3-jquery/
+
+         // Handle to the circle object that is currently spinning
+         var curCircle = 0;
+
+         function spinCircle(e) {
+             var msx = e.pageX - curCircle['divx'];
+             var msy = e.pageY - curCircle['divy'];
+             var mangle = Math.atan2(msy, msx);
+
+             var rotAngle = mangle - curCircle['mouseStartAngle'] + curCircle['imageStartAngle'];
+             curCircle.style.transform = "rotate(" + rotAngle + "rad)";
+             curCircle['curRot'] = rotAngle;
+
+             // Move any mangaged shape with the spinning circle.
+             if( curCircle['manage'] ) {
+                 mcir = document.getElementById(curCircle['manage']);
+                 mcir.style.left = (((curCircle['centerX']) + Math.cos(rotAngle) * curCircle['centerX']) - mcir.naturalWidth/2) + 'px';
+                 mcir.style.top = (((curCircle['centerY']) + Math.sin(rotAngle) * curCircle['centerY']) - mcir.naturalHeight/2) + 'px';
+             }
+             e.preventDefault();
+             return false;
+         }
+
+         function stopSpin(e) {
+             // Mouse button is up. Stop spinning, reset things.
+             window.removeEventListener("mousemove", spinCircle );
+             window.removeEventListener("mouseup", stopSpin );
+             curCircle = 0;
+             return false;
+         }
+
+         function beginSpin(e) {
+             // A circle was clicked. Save the object for later, save             the origin x,y of the click for later.
+             curCircle = e.target;          // Target to Spin (divx,divy are center point)
+             curCircle['divx'] = curCircle.width / 2 + curCircle.x;
+             curCircle['divy'] = curCircle.height / 2 + curCircle.y;
+
+             // Store the angle of the mouse at the start of the rotation, relative to the center of the image.
+             var msx = e.pageX - curCircle['divx'];
+             var msy = e.pageY - curCircle['divy'];
+             curCircle['mouseStartAngle'] = Math.atan2(msy, msx);
+             curCircle['imageStartAngle'] = curCircle['curRot'];
+
+
+             // Setup event listeners for the whole window. Watch for mouse move or button up to stop spinning.
+             window.addEventListener("mousemove", spinCircle, false );
+             window.addEventListener("mouseup", stopSpin, false );
+             e.preventDefault();    // Dont let the browser catch the click
+             return false;
+         }
+
+         function initCircle( cid) {
+             // Move single circle to center of div, setup listener
+             imgLarge = document.getElementById('large');
+             imgCircle = document.getElementById(cid);
+             imgCircle.style.left = (imgLarge.naturalWidth / 2) - (imgCircle.naturalWidth/2) + 'px';;
+             imgCircle.style.top = imgCircle.style.left;
+             imgCircle.addEventListener("mousedown", beginSpin, false );
+             imgCircle['curRot'] = 0;
+             imgCircle['mouseStartAngle'] = 0; // Math.atan2(msy, msx);
+             imgCircle.style.transform = "rotate(0deg)";
+             imgCircle['divx'] = imgCircle.width / 2 + imgCircle.x;
+             imgCircle['divy'] = imgCircle.height / 2 + imgCircle.y;
+             imgCircle['centerX'] = imgLarge.naturalWidth / 2;
+             imgCircle['centerY'] = imgLarge.naturalHeight / 2;
+             return imgCircle;
+         }
+
+         function initCircles() {
+             // Position circles centered in div. Setup listerners
+             large = initCircle('large');
+             initCircle('medium');
+             small = initCircle('small');
+
+             large['manage'] = 'small';
+             small.style.left = large.width - small.naturalWidth / 2 + 'px';
+             small['divx'] = imgCircle.width / 2 + imgCircle.x;
+             small['divy'] = imgCircle.height / 2 + imgCircle.y;
+         }
+
+        </script>
+    </head>
+    <body onload="initCircles();">
+        <div id='circles' style="background-color:green;" >
+            <img style="position:absolute;" id="large" src="./large.png" />
+            <img style="position:absolute;" id="medium" src="./medium.png" />
+            <img style="position:absolute;" id="small" src="./small.png" />
+        </div>
+    </body>
+</html>
